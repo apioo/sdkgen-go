@@ -1,11 +1,14 @@
 package sdkgen
 
 import (
+	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
 	"strings"
+	"time"
 )
 
 type ClientAbstract struct {
@@ -18,165 +21,155 @@ type ClientAbstract struct {
 func (client ClientAbstract) BuildRedirectUrl(redirectUrl string, scopes []string, state string) (string, error) {
 	var credentials = client.Credentials.(AuthorizationCode)
 
-	url, err := url.Parse(credentials.AuthorizationUrl)
+	authUrl, err := url.Parse(credentials.AuthorizationUrl)
 	if err != nil {
 		return "", errors.New("could not parse authorization url")
 	}
 
-	url.Query().Add("response_type", "code")
-	url.Query().Add("client_id", credentials.ClientId)
+	authUrl.Query().Add("response_type", "code")
+	authUrl.Query().Add("client_id", credentials.ClientId)
 
 	if redirectUrl != "" {
-		url.Query().Add("redirect_uri", redirectUrl)
+		authUrl.Query().Add("redirect_uri", redirectUrl)
 	}
 
 	if len(scopes) > 0 {
-		url.Query().Add("scopes", strings.Join(scopes, ","))
+		authUrl.Query().Add("scopes", strings.Join(scopes, ","))
 	}
 
 	if state != "" {
-		url.Query().Add("state", state)
+		authUrl.Query().Add("state", state)
 	}
 
-	return url.String(), nil
+	return authUrl.String(), nil
 }
 
-func (client ClientAbstract) FetchAccessTokenByCode() AccessToken {
+func (client ClientAbstract) FetchAccessTokenByCode(code string) (AccessToken, error) {
 	var credentials = client.Credentials.(AuthorizationCode)
+	var httpClient = client.NewHttpClient(HttpBasic{UserName: credentials.ClientId, Password: credentials.ClientSecret})
 
-	/*
-	   httpClient = client.NewHttpClient(new HttpBasic{credentials.ClientId, credentials.ClientSecret})
+	data := url.Values{}
+	data.Set("grant_type", "authorization_code")
+	data.Set("code", code)
 
-	   public async fetchAccessTokenByCode(code: string): Promise<AccessToken> {
-	       if (!(this.credentials instanceof AuthorizationCode)) {
-	       throw new InvalidCredentialsException('The configured credentials do not support the OAuth2 authorization code flow');
-	       }
+	req, err := http.NewRequest("POST", credentials.TokenUrl, strings.NewReader(data.Encode()))
+	if err != nil {
+		return AccessToken{}, errors.New("could create request to obtain access token by code")
+	}
 
-	       const httpClient = await this.newHttpClient(new HttpBasic(this.credentials.clientId, this.credentials.clientSecret));
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return AccessToken{}, errors.New("could not send obtain access token by code")
+	}
 
-	       const response = await httpClient.post<AccessToken>(this.credentials.tokenUrl, {
-	       grant_type: 'authorization_code',
-	           code: code,
-	       }, {
-	       headers: {
-	       Accept: 'application/json'
-	       },
-	       });
-
-	       return this.parseTokenResponse(response);
-	   }
-	*/
+	return client.ParseTokenResponse(resp)
 }
 
-func (client ClientAbstract) FetchAccessTokenByClientCredentials() {
+func (client ClientAbstract) FetchAccessTokenByClientCredentials() (AccessToken, error) {
 	var credentials = client.Credentials.(ClientCredentials)
+	var httpClient = client.NewHttpClient(HttpBasic{UserName: credentials.ClientId, Password: credentials.ClientSecret})
 
-	/*
-	   public async fetchAccessTokenByClientCredentials(): Promise<AccessToken> {
-	       if (!(this.credentials instanceof ClientCredentials)) {
-	       throw new InvalidCredentialsException('The configured credentials do not support the OAuth2 client credentials flow');
-	       }
+	data := url.Values{}
+	data.Set("grant_type", "client_credentials")
 
-	       const httpClient = await this.newHttpClient(new HttpBasic(this.credentials.clientId, this.credentials.clientSecret));
+	if len(client.Scopes) > 0 {
+		data.Set("scope", strings.Join(client.Scopes, ","))
+	}
 
-	       let data: {grant_type: string, scope?: string} = {
-	       grant_type: 'client_credentials'
-	       };
+	req, err := http.NewRequest("POST", credentials.TokenUrl, strings.NewReader(data.Encode()))
+	if err != nil {
+		return AccessToken{}, errors.New("could create request to obtain access token by code")
+	}
 
-	       if (this.scopes && this.scopes.length > 0) {
-	           data.scope = this.scopes.join(',');
-	       }
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return AccessToken{}, errors.New("could not send obtain access token by code")
+	}
 
-	       const response = await httpClient.post<AccessToken>(this.credentials.tokenUrl, data, {
-	       headers: {
-	       Accept: 'application/json'
-	       },
-	       });
-
-	       return this.parseTokenResponse(response);
-	   }
-
-	*/
+	return client.ParseTokenResponse(resp)
 }
 
-func (client ClientAbstract) FetchAccessTokenByRefresh() {
+func (client ClientAbstract) FetchAccessTokenByRefresh(refreshToken string) (AccessToken, error) {
 	var credentials = client.Credentials.(AuthorizationCode)
+	var httpClient = client.NewHttpClient(HttpBasic{UserName: credentials.ClientId, Password: credentials.ClientSecret})
 
-	/*
-	   public async fetchAccessTokenByRefresh(refreshToken: string): Promise<AccessToken> {
-	       if (!(this.credentials instanceof AuthorizationCode)) {
-	       throw new InvalidCredentialsException('The configured credentials do not support the OAuth2 flow');
-	       }
+	data := url.Values{}
+	data.Set("grant_type", "refresh_token")
+	data.Set("refresh_token", refreshToken)
 
-	       const httpClient = await this.newHttpClient(new HttpBasic(this.credentials.clientId, this.credentials.clientSecret));
+	req, err := http.NewRequest("POST", credentials.TokenUrl, strings.NewReader(data.Encode()))
+	if err != nil {
+		return AccessToken{}, errors.New("could create request to obtain access token by code")
+	}
 
-	       const response = await httpClient.post<AccessToken>(this.credentials.tokenUrl, {
-	       grant_type: 'refresh_token',
-	           refresh_token: refreshToken,
-	       }, {
-	       headers: {
-	       Accept: 'application/json'
-	       },
-	       });
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return AccessToken{}, errors.New("could not send obtain access token by code")
+	}
 
-	       return this.parseTokenResponse(response);
-	   }
-
-	*/
+	return client.ParseTokenResponse(resp)
 }
 
-func (client ClientAbstract) NewHttpClient(credentials CredentialsInterface) http.Client {
-	instance := http.Client{
+func (client ClientAbstract) NewHttpClient(credentials CredentialsInterface) *http.Client {
+	instance := &http.Client{
 		Transport: NewAuthorizationTransport(credentials, client),
 	}
 	return instance
 }
 
-func (client ClientAbstract) GetAccessToken() string {
-	/*
-	   private async getAccessToken(automaticRefresh: boolean = true, expireThreshold: number = ClientAbstract.EXPIRE_THRESHOLD): Promise<string> {
-	       const timestamp = Math.floor(Date.now() / 1000);
+func (client ClientAbstract) GetAccessToken(automaticRefresh bool, expireThreshold int64) (string, error) {
+	timestamp := time.Now().Unix()
 
-	       let accessToken = this.tokenStore.get();
-	       if ((!accessToken || accessToken.expires_in < timestamp) && this.credentials instanceof ClientCredentials) {
-	           accessToken = await this.fetchAccessTokenByClientCredentials();
-	       }
+	accessToken, err := client.TokenStore.get()
+	if err == nil || accessToken.ExpiresIn < timestamp {
+		accessToken, err = client.FetchAccessTokenByClientCredentials()
+	}
 
-	       if (!accessToken) {
-	           throw new FoundNoAccessTokenException('Found no access Token, please obtain an access Token before making a request');
-	       }
+	if err != nil {
+		return "", errors.New("found no access Token, please obtain an access Token before making a request")
+	}
 
-	       if (accessToken.expires_in > (timestamp + expireThreshold)) {
-	           return accessToken.access_token;
-	       }
+	if accessToken.ExpiresIn > (timestamp + expireThreshold) {
+		return accessToken.AccessToken, nil
+	}
 
-	       if (automaticRefresh && accessToken.refresh_token) {
-	           accessToken = await this.fetchAccessTokenByRefresh(accessToken.refresh_token);
-	       }
+	if automaticRefresh && accessToken.RefreshToken != "" {
+		accessToken, err = client.FetchAccessTokenByRefresh(accessToken.RefreshToken)
+		if err != nil {
+			return "", errors.New("could not refresh access token")
+		}
+	}
 
-	       return accessToken.access_token;
-	   }
-
-	*/
+	return accessToken.AccessToken, nil
 }
 
-func (client ClientAbstract) ParseTokenResponse() AccessToken {
-	/*
-	   private async parseTokenResponse(response: AxiosResponse<AccessToken>): Promise<AccessToken> {
-	       if (response.status !== 200) {
-	           throw new InvalidAccessTokenException('Could not obtain access Token, received a non successful status code: ' + response.status);
-	       }
+func (client ClientAbstract) ParseTokenResponse(resp *http.Response) (AccessToken, error) {
+	if resp.StatusCode != 200 {
+		return AccessToken{}, errors.New("could not obtain access Token, received a non successful status code: " + resp.Status)
+	}
 
-	       if (!response.data.access_token) {
-	           throw new InvalidAccessTokenException('Could not obtain access Token');
-	       }
+	defer resp.Body.Close()
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return AccessToken{}, errors.New("could not read response body")
+	}
 
-	       this.tokenStore.persist(response.data);
+	var token AccessToken
+	err = json.Unmarshal(respBody, &token)
+	if err != nil {
+		return AccessToken{}, errors.New("could not unmarshal access Token")
+	}
 
-	       return response.data;
-	   }
+	if token.AccessToken != "" {
+		return AccessToken{}, errors.New("could not obtain access Token")
+	}
 
-	*/
+	err = client.TokenStore.persist(token)
+	if err != nil {
+		return AccessToken{}, err
+	}
+
+	return token, nil
 }
 
 type AuthorizationTransport struct {
@@ -198,7 +191,10 @@ func (transport *AuthorizationTransport) RoundTrip(req *http.Request) (*http.Res
 		var cred = transport.Credentials.(ApiKey)
 		req.Header.Add(cred.Name, cred.Token)
 	} else if reflect.TypeOf(transport.Credentials).Name() == "AuthorizationCode" || reflect.TypeOf(transport.Credentials).Name() == "ClientCredentials" {
-		req.Header.Add("Authorization", "Bearer "+transport.Client.GetAccessToken())
+		accessToken, err := transport.Client.GetAccessToken(true, 60*10)
+		if err == nil {
+			req.Header.Add("Authorization", "Bearer "+accessToken)
+		}
 	}
 
 	return http.DefaultTransport.RoundTrip(req)

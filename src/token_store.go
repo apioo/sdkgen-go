@@ -8,8 +8,8 @@ import (
 
 type TokenStoreInterface interface {
 	get() (AccessToken, error)
-	persist(token AccessToken) (bool, error)
-	remove() (bool, error)
+	persist(token AccessToken) error
+	remove() error
 }
 
 type MemoryTokenStore struct {
@@ -20,14 +20,14 @@ func (store MemoryTokenStore) Get() (AccessToken, error) {
 	return store.Token, nil
 }
 
-func (store MemoryTokenStore) Persist(token AccessToken) (bool, error) {
+func (store MemoryTokenStore) Persist(token AccessToken) error {
 	store.Token = token
-	return true, nil
+	return nil
 }
 
-func (store MemoryTokenStore) Remove() (bool, error) {
+func (store MemoryTokenStore) Remove() error {
 	store.Token = AccessToken{}
-	return true, nil
+	return nil
 }
 
 func NewMemoryTokenStore() MemoryTokenStore {
@@ -53,27 +53,27 @@ func (store FileTokenStore) Get() (AccessToken, error) {
 	return token, nil
 }
 
-func (store FileTokenStore) Persist(token AccessToken) (bool, error) {
+func (store FileTokenStore) Persist(token AccessToken) error {
 	raw, err := json.Marshal(token)
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	err = os.WriteFile(store.Path, raw, 0644)
 	if err != nil {
-		return false, err
+		return err
 	}
 
-	return true, nil
+	return nil
 }
 
-func (store FileTokenStore) Remove() (bool, error) {
+func (store FileTokenStore) Remove() error {
 	err := os.Remove(store.Path)
 	if err != nil {
-		return false, err
+		return err
 	}
 
-	return true, nil
+	return nil
 }
 
 func NewFileTokenStore(path string) FileTokenStore {
