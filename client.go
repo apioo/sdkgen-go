@@ -179,7 +179,7 @@ func (client Client) GetResource() *Resource {
 	}
 }
 
-func (client Client) NewClient(baseUrl string, credentials CredentialsInterface, tokenStore TokenStoreInterface, scopes []string) *Client {
+func NewClient(baseUrl string, credentials CredentialsInterface, tokenStore TokenStoreInterface, scopes []string) *Client {
 	return &Client{
 		baseUrl:     baseUrl,
 		credentials: credentials,
