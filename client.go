@@ -172,6 +172,13 @@ func (client Client) ParseTokenResponse(resp *http.Response) (AccessToken, error
 	return token, nil
 }
 
+func (client Client) GetResource() Resource {
+	return Resource{
+		BaseUrl:    client.BaseUrl,
+		HttpClient: client.NewHttpClient(client.Credentials),
+	}
+}
+
 type AuthorizationTransport struct {
 	Credentials CredentialsInterface
 	Client      Client
