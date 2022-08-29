@@ -11,14 +11,14 @@ import (
 	"time"
 )
 
-type ClientAbstract struct {
+type Client struct {
 	BaseUrl     string
 	Credentials CredentialsInterface
 	TokenStore  TokenStoreInterface
 	Scopes      []string
 }
 
-func (client ClientAbstract) BuildRedirectUrl(redirectUrl string, scopes []string, state string) (string, error) {
+func (client Client) BuildRedirectUrl(redirectUrl string, scopes []string, state string) (string, error) {
 	var credentials = client.Credentials.(AuthorizationCode)
 
 	authUrl, err := url.Parse(credentials.AuthorizationUrl)
@@ -44,7 +44,7 @@ func (client ClientAbstract) BuildRedirectUrl(redirectUrl string, scopes []strin
 	return authUrl.String(), nil
 }
 
-func (client ClientAbstract) FetchAccessTokenByCode(code string) (AccessToken, error) {
+func (client Client) FetchAccessTokenByCode(code string) (AccessToken, error) {
 	var credentials = client.Credentials.(AuthorizationCode)
 	var httpClient = client.NewHttpClient(HttpBasic{UserName: credentials.ClientId, Password: credentials.ClientSecret})
 
@@ -65,7 +65,7 @@ func (client ClientAbstract) FetchAccessTokenByCode(code string) (AccessToken, e
 	return client.ParseTokenResponse(resp)
 }
 
-func (client ClientAbstract) FetchAccessTokenByClientCredentials() (AccessToken, error) {
+func (client Client) FetchAccessTokenByClientCredentials() (AccessToken, error) {
 	var credentials = client.Credentials.(ClientCredentials)
 	var httpClient = client.NewHttpClient(HttpBasic{UserName: credentials.ClientId, Password: credentials.ClientSecret})
 
@@ -89,7 +89,7 @@ func (client ClientAbstract) FetchAccessTokenByClientCredentials() (AccessToken,
 	return client.ParseTokenResponse(resp)
 }
 
-func (client ClientAbstract) FetchAccessTokenByRefresh(refreshToken string) (AccessToken, error) {
+func (client Client) FetchAccessTokenByRefresh(refreshToken string) (AccessToken, error) {
 	var credentials = client.Credentials.(AuthorizationCode)
 	var httpClient = client.NewHttpClient(HttpBasic{UserName: credentials.ClientId, Password: credentials.ClientSecret})
 
@@ -110,14 +110,14 @@ func (client ClientAbstract) FetchAccessTokenByRefresh(refreshToken string) (Acc
 	return client.ParseTokenResponse(resp)
 }
 
-func (client ClientAbstract) NewHttpClient(credentials CredentialsInterface) *http.Client {
+func (client Client) NewHttpClient(credentials CredentialsInterface) *http.Client {
 	instance := &http.Client{
 		Transport: NewAuthorizationTransport(credentials, client),
 	}
 	return instance
 }
 
-func (client ClientAbstract) GetAccessToken(automaticRefresh bool, expireThreshold int64) (string, error) {
+func (client Client) GetAccessToken(automaticRefresh bool, expireThreshold int64) (string, error) {
 	timestamp := time.Now().Unix()
 
 	accessToken, err := client.TokenStore.get()
@@ -143,7 +143,7 @@ func (client ClientAbstract) GetAccessToken(automaticRefresh bool, expireThresho
 	return accessToken.AccessToken, nil
 }
 
-func (client ClientAbstract) ParseTokenResponse(resp *http.Response) (AccessToken, error) {
+func (client Client) ParseTokenResponse(resp *http.Response) (AccessToken, error) {
 	if resp.StatusCode != 200 {
 		return AccessToken{}, errors.New("could not obtain access Token, received a non successful status code: " + resp.Status)
 	}
@@ -174,7 +174,7 @@ func (client ClientAbstract) ParseTokenResponse(resp *http.Response) (AccessToke
 
 type AuthorizationTransport struct {
 	Credentials CredentialsInterface
-	Client      ClientAbstract
+	Client      Client
 }
 
 func (transport *AuthorizationTransport) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -200,6 +200,6 @@ func (transport *AuthorizationTransport) RoundTrip(req *http.Request) (*http.Res
 	return http.DefaultTransport.RoundTrip(req)
 }
 
-func NewAuthorizationTransport(credentials CredentialsInterface, client ClientAbstract) *AuthorizationTransport {
+func NewAuthorizationTransport(credentials CredentialsInterface, client Client) *AuthorizationTransport {
 	return &AuthorizationTransport{credentials, client}
 }

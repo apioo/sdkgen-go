@@ -2,7 +2,7 @@ package sdkgen
 
 import "net/http"
 
-type ResourceAbstract struct {
+type Resource struct {
 	BaseUrl    string
 	HttpClient http.Client
 }
