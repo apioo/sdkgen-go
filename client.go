@@ -12,14 +12,14 @@ import (
 )
 
 type Client struct {
-	BaseUrl     string
-	Credentials CredentialsInterface
-	TokenStore  TokenStoreInterface
-	Scopes      []string
+	baseUrl     string
+	credentials CredentialsInterface
+	tokenStore  TokenStoreInterface
+	scopes      []string
 }
 
 func (client Client) BuildRedirectUrl(redirectUrl string, scopes []string, state string) (string, error) {
-	var credentials = client.Credentials.(AuthorizationCode)
+	var credentials = client.credentials.(AuthorizationCode)
 
 	authUrl, err := url.Parse(credentials.AuthorizationUrl)
 	if err != nil {
@@ -45,7 +45,7 @@ func (client Client) BuildRedirectUrl(redirectUrl string, scopes []string, state
 }
 
 func (client Client) FetchAccessTokenByCode(code string) (AccessToken, error) {
-	var credentials = client.Credentials.(AuthorizationCode)
+	var credentials = client.credentials.(AuthorizationCode)
 	var httpClient = client.NewHttpClient(HttpBasic{UserName: credentials.ClientId, Password: credentials.ClientSecret})
 
 	data := url.Values{}
@@ -66,14 +66,14 @@ func (client Client) FetchAccessTokenByCode(code string) (AccessToken, error) {
 }
 
 func (client Client) FetchAccessTokenByClientCredentials() (AccessToken, error) {
-	var credentials = client.Credentials.(ClientCredentials)
+	var credentials = client.credentials.(ClientCredentials)
 	var httpClient = client.NewHttpClient(HttpBasic{UserName: credentials.ClientId, Password: credentials.ClientSecret})
 
 	data := url.Values{}
 	data.Set("grant_type", "client_credentials")
 
-	if len(client.Scopes) > 0 {
-		data.Set("scope", strings.Join(client.Scopes, ","))
+	if len(client.scopes) > 0 {
+		data.Set("scope", strings.Join(client.scopes, ","))
 	}
 
 	req, err := http.NewRequest("POST", credentials.TokenUrl, strings.NewReader(data.Encode()))
@@ -90,7 +90,7 @@ func (client Client) FetchAccessTokenByClientCredentials() (AccessToken, error) 
 }
 
 func (client Client) FetchAccessTokenByRefresh(refreshToken string) (AccessToken, error) {
-	var credentials = client.Credentials.(AuthorizationCode)
+	var credentials = client.credentials.(AuthorizationCode)
 	var httpClient = client.NewHttpClient(HttpBasic{UserName: credentials.ClientId, Password: credentials.ClientSecret})
 
 	data := url.Values{}
@@ -120,7 +120,7 @@ func (client Client) NewHttpClient(credentials CredentialsInterface) *http.Clien
 func (client Client) GetAccessToken(automaticRefresh bool, expireThreshold int64) (string, error) {
 	timestamp := time.Now().Unix()
 
-	accessToken, err := client.TokenStore.get()
+	accessToken, err := client.tokenStore.Get()
 	if err == nil || accessToken.ExpiresIn < timestamp {
 		accessToken, err = client.FetchAccessTokenByClientCredentials()
 	}
@@ -164,7 +164,7 @@ func (client Client) ParseTokenResponse(resp *http.Response) (AccessToken, error
 		return AccessToken{}, errors.New("could not obtain access Token")
 	}
 
-	err = client.TokenStore.persist(token)
+	err = client.tokenStore.Persist(token)
 	if err != nil {
 		return AccessToken{}, err
 	}
@@ -172,10 +172,19 @@ func (client Client) ParseTokenResponse(resp *http.Response) (AccessToken, error
 	return token, nil
 }
 
-func (client Client) GetResource() Resource {
-	return Resource{
-		BaseUrl:    client.BaseUrl,
-		HttpClient: client.NewHttpClient(client.Credentials),
+func (client Client) GetResource() *Resource {
+	return &Resource{
+		BaseUrl:    client.baseUrl,
+		HttpClient: client.NewHttpClient(client.credentials),
+	}
+}
+
+func (client Client) NewClient(baseUrl string, credentials CredentialsInterface, tokenStore TokenStoreInterface, scopes []string) *Client {
+	return &Client{
+		baseUrl:     baseUrl,
+		credentials: credentials,
+		tokenStore:  tokenStore,
+		scopes:      scopes,
 	}
 }
 

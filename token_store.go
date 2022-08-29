@@ -7,9 +7,9 @@ import (
 )
 
 type TokenStoreInterface interface {
-	get() (AccessToken, error)
-	persist(token AccessToken) error
-	remove() error
+	Get() (AccessToken, error)
+	Persist(token AccessToken) error
+	Remove() error
 }
 
 type MemoryTokenStore struct {
@@ -35,11 +35,11 @@ func NewMemoryTokenStore() MemoryTokenStore {
 }
 
 type FileTokenStore struct {
-	Path string
+	path string
 }
 
 func (store FileTokenStore) Get() (AccessToken, error) {
-	data, err := os.ReadFile(store.Path)
+	data, err := os.ReadFile(store.path)
 	if err != nil {
 		return AccessToken{}, errors.New("could not read Token store file")
 	}
@@ -59,7 +59,7 @@ func (store FileTokenStore) Persist(token AccessToken) error {
 		return err
 	}
 
-	err = os.WriteFile(store.Path, raw, 0644)
+	err = os.WriteFile(store.path, raw, 0644)
 	if err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func (store FileTokenStore) Persist(token AccessToken) error {
 }
 
 func (store FileTokenStore) Remove() error {
-	err := os.Remove(store.Path)
+	err := os.Remove(store.path)
 	if err != nil {
 		return err
 	}
@@ -77,5 +77,5 @@ func (store FileTokenStore) Remove() error {
 }
 
 func NewFileTokenStore(path string) FileTokenStore {
-	return FileTokenStore{path}
+	return FileTokenStore{path: path}
 }
