@@ -11,16 +11,24 @@ type ApiKey struct {
 }
 
 type AuthorizationCode struct {
-	OAuth2Abstract
+	CredentialsInterface
+	ClientId         string
+	ClientSecret     string
+	TokenUrl         string
+	AuthorizationUrl string
+	RefreshUrl       string
 }
 
 type ClientCredentials struct {
-	OAuth2Abstract
+	CredentialsInterface
+	ClientId     string
+	ClientSecret string
+	TokenUrl     string
+	RefreshUrl   string
 }
 
 type HttpBasic struct {
 	CredentialsInterface
-
 	UserName string
 	Password string
 }
@@ -28,12 +36,4 @@ type HttpBasic struct {
 type HttpBearer struct {
 	CredentialsInterface
 	Token string
-}
-
-type OAuth2Abstract struct {
-	CredentialsInterface
-	ClientId         string
-	ClientSecret     string
-	TokenUrl         string
-	AuthorizationUrl string
 }
