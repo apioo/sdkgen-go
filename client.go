@@ -1,6 +1,7 @@
 package sdkgen
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -57,6 +58,8 @@ func (client Client) FetchAccessTokenByCode(code string) (AccessToken, error) {
 		return AccessToken{}, errors.New("could create request to obtain access token by code")
 	}
 
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return AccessToken{}, errors.New("could not send obtain access token by code")
@@ -81,6 +84,8 @@ func (client Client) FetchAccessTokenByClientCredentials() (AccessToken, error) 
 		return AccessToken{}, errors.New("could create request to obtain access token by code")
 	}
 
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return AccessToken{}, errors.New("could not send obtain access token by code")
@@ -101,6 +106,8 @@ func (client Client) FetchAccessTokenByRefresh(refreshToken string) (AccessToken
 	if err != nil {
 		return AccessToken{}, errors.New("could create request to obtain access token by code")
 	}
+
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
@@ -160,7 +167,7 @@ func (client Client) ParseTokenResponse(resp *http.Response) (AccessToken, error
 		return AccessToken{}, errors.New("could not unmarshal access Token")
 	}
 
-	if token.AccessToken != "" {
+	if token.AccessToken == "" {
 		return AccessToken{}, errors.New("could not obtain access Token")
 	}
 
@@ -197,16 +204,18 @@ func (transport *AuthorizationTransport) RoundTrip(req *http.Request) (*http.Res
 	req.Header.Add("User-Agent", "SDKgen Client v0.1")
 	req.Header.Add("Accept", "application/json")
 
-	if reflect.TypeOf(transport.Credentials).Name() == "HttpBasic" {
+	var credentialsType = reflect.TypeOf(transport.Credentials).Name()
+	if credentialsType == "HttpBasic" {
 		var cred = transport.Credentials.(HttpBasic)
-		req.Header.Add("Authorization", "Basic "+cred.UserName+":"+cred.Password)
-	} else if reflect.TypeOf(transport.Credentials).Name() == "HttpBearer" {
+		var auth = base64.StdEncoding.EncodeToString([]byte(cred.UserName + ":" + cred.Password))
+		req.Header.Add("Authorization", "Basic "+auth)
+	} else if credentialsType == "HttpBearer" {
 		var cred = transport.Credentials.(HttpBearer)
 		req.Header.Add("Authorization", "Bearer "+cred.Token)
-	} else if reflect.TypeOf(transport.Credentials).Name() == "ApiKey" {
+	} else if credentialsType == "ApiKey" {
 		var cred = transport.Credentials.(ApiKey)
 		req.Header.Add(cred.Name, cred.Token)
-	} else if reflect.TypeOf(transport.Credentials).Name() == "AuthorizationCode" || reflect.TypeOf(transport.Credentials).Name() == "ClientCredentials" {
+	} else if credentialsType == "AuthorizationCode" || credentialsType == "ClientCredentials" {
 		accessToken, err := transport.Client.GetAccessToken(true, 60*10)
 		if err == nil {
 			req.Header.Add("Authorization", "Bearer "+accessToken)
