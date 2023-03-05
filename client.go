@@ -5,17 +5,27 @@ import (
 )
 
 type Client struct {
-	BaseUrl       string
-	Authenticator *AuthenticatorInterface
+	Authenticator AuthenticatorInterface
 	HttpClient    *http.Client
 	Parser        *Parser
 }
 
-type Parser struct {
+type TagAbstract struct {
+	HttpClient *http.Client
+	Parser     *Parser
 }
 
-func HttpClientFactory(authenticator AuthenticatorInterface) *http.Client {
-	return &http.Client{
-		Transport: authenticator,
+func NewClient(baseUrl string, credentials CredentialsInterface) (*Client, error) {
+	authenticator, err := AuthenticatorFactory(credentials)
+	if err != nil {
+		return nil, err
 	}
+
+	return &Client{
+		Authenticator: authenticator,
+		HttpClient:    HttpClientFactory(authenticator),
+		Parser: &Parser{
+			BaseUrl: baseUrl,
+		},
+	}, nil
 }
