@@ -10,21 +10,14 @@ type ApiKey struct {
 	In    string
 }
 
-type AuthorizationCode struct {
+type OAuth2 struct {
 	CredentialsInterface
 	ClientId         string
 	ClientSecret     string
 	TokenUrl         string
 	AuthorizationUrl string
-	RefreshUrl       string
-}
-
-type ClientCredentials struct {
-	CredentialsInterface
-	ClientId     string
-	ClientSecret string
-	TokenUrl     string
-	RefreshUrl   string
+	TokenStore       TokenStoreInterface
+	Scopes           []string
 }
 
 type HttpBasic struct {
