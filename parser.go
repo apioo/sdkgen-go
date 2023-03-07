@@ -2,8 +2,9 @@ package sdkgen
 
 import (
 	"encoding/json"
-	"github.com/go-chrono/chrono"
+	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -51,7 +52,11 @@ func (parser *Parser) SubstituteParameters(path string, parameters map[string]in
 			name = part[1:]
 		} else if strings.HasPrefix(part, "$") {
 			var pos = strings.Index(part, "<")
-			name = part[1 : pos-1]
+			if pos != -1 {
+				name = part[1:pos]
+			} else {
+				name = part[1:]
+			}
 		} else if strings.HasPrefix(part, "{") && strings.HasSuffix(part, "}") {
 			name = part[1 : len(part)-1]
 		}
@@ -68,24 +73,30 @@ func (parser *Parser) SubstituteParameters(path string, parameters map[string]in
 }
 
 func ToString(value interface{}) string {
+	if value == nil {
+		return ""
+	}
+
 	if reflect.TypeOf(value).Name() == "string" {
 		return value.(string)
 	} else if reflect.TypeOf(value).Name() == "float32" || reflect.TypeOf(value).Name() == "float64" {
-		return value.(string)
-	} else if reflect.TypeOf(value).Name() == "int" || reflect.TypeOf(value).Name() == "int8" || reflect.TypeOf(value).Name() == "int16" || reflect.TypeOf(value).Name() == "int32" || reflect.TypeOf(value).Name() == "int64" {
-		return value.(string)
+		return fmt.Sprintf("%g", value)
+	} else if reflect.TypeOf(value).Name() == "int" {
+		return strconv.FormatInt(int64(value.(int)), 10)
+	} else if reflect.TypeOf(value).Name() == "int8" {
+		return strconv.FormatInt(int64(value.(int8)), 10)
+	} else if reflect.TypeOf(value).Name() == "int16" {
+		return strconv.FormatInt(int64(value.(int16)), 10)
+	} else if reflect.TypeOf(value).Name() == "int32" {
+		return strconv.FormatInt(int64(value.(int32)), 10)
+	} else if reflect.TypeOf(value).Name() == "int64" {
+		return strconv.FormatInt(value.(int64), 10)
 	} else if reflect.TypeOf(value).Name() == "bool" {
 		if value.(bool) {
 			return "1"
 		} else {
 			return "0"
 		}
-	} else if reflect.TypeOf(value).Name() == "chrono.LocalDate" {
-		return value.(chrono.LocalDate).String()
-	} else if reflect.TypeOf(value).Name() == "chrono.LocalTime" {
-		return value.(chrono.LocalTime).String()
-	} else if reflect.TypeOf(value).Name() == "chrono.LocalDateTime" {
-		return value.(chrono.LocalDateTime).String()
 	} else if reflect.TypeOf(value).Name() == "time.Time" {
 		return value.(time.Time).Format(time.RFC3339)
 	} else {
