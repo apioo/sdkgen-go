@@ -5,6 +5,11 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      httpbin:
+        image: kennethreitz/httpbin
+        ports:
+          - 8081:80
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
