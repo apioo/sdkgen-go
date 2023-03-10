@@ -17,7 +17,7 @@ type AuthenticatorInterface interface {
 }
 
 type HttpBasicAuthenticator struct {
-	Credentials *HttpBasic
+	Credentials HttpBasic
 }
 
 func (authenticator *HttpBasicAuthenticator) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -30,7 +30,7 @@ func (authenticator *HttpBasicAuthenticator) RoundTrip(req *http.Request) (*http
 }
 
 type HttpBearerAuthenticator struct {
-	Credentials *HttpBearer
+	Credentials HttpBearer
 }
 
 func (authenticator *HttpBearerAuthenticator) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -42,7 +42,7 @@ func (authenticator *HttpBearerAuthenticator) RoundTrip(req *http.Request) (*htt
 }
 
 type ApiKeyAuthenticator struct {
-	Credentials *ApiKey
+	Credentials ApiKey
 }
 
 func (authenticator *ApiKeyAuthenticator) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -54,7 +54,7 @@ func (authenticator *ApiKeyAuthenticator) RoundTrip(req *http.Request) (*http.Re
 }
 
 type OAuth2Authenticator struct {
-	Credentials *OAuth2
+	Credentials OAuth2
 }
 
 func (authenticator *OAuth2Authenticator) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -95,7 +95,7 @@ func (authenticator *OAuth2Authenticator) BuildRedirectUrl(redirectUrl string, s
 
 func (authenticator *OAuth2Authenticator) FetchAccessTokenByCode(code string) (AccessToken, error) {
 	var httpClient = HttpClientFactory(&HttpBasicAuthenticator{
-		Credentials: &HttpBasic{
+		Credentials: HttpBasic{
 			UserName: authenticator.Credentials.ClientId,
 			Password: authenticator.Credentials.ClientSecret,
 		},
@@ -122,7 +122,7 @@ func (authenticator *OAuth2Authenticator) FetchAccessTokenByCode(code string) (A
 
 func (authenticator *OAuth2Authenticator) FetchAccessTokenByClientCredentials() (AccessToken, error) {
 	var httpClient = HttpClientFactory(&HttpBasicAuthenticator{
-		Credentials: &HttpBasic{
+		Credentials: HttpBasic{
 			UserName: authenticator.Credentials.ClientId,
 			Password: authenticator.Credentials.ClientSecret,
 		},
@@ -152,7 +152,7 @@ func (authenticator *OAuth2Authenticator) FetchAccessTokenByClientCredentials() 
 
 func (authenticator *OAuth2Authenticator) FetchAccessTokenByRefresh(refreshToken string) (AccessToken, error) {
 	var httpClient = HttpClientFactory(&HttpBasicAuthenticator{
-		Credentials: &HttpBasic{
+		Credentials: HttpBasic{
 			UserName: authenticator.Credentials.ClientId,
 			Password: authenticator.Credentials.ClientSecret,
 		},

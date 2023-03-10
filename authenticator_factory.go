@@ -8,19 +8,19 @@ import (
 func AuthenticatorFactory(credentials CredentialsInterface) (AuthenticatorInterface, error) {
 	if reflect.TypeOf(credentials).Name() == "HttpBasic" {
 		return &HttpBasicAuthenticator{
-			Credentials: credentials.(*HttpBasic),
+			Credentials: credentials.(HttpBasic),
 		}, nil
 	} else if reflect.TypeOf(credentials).Name() == "HttpBearer" {
 		return &HttpBearerAuthenticator{
-			Credentials: credentials.(*HttpBearer),
+			Credentials: credentials.(HttpBearer),
 		}, nil
 	} else if reflect.TypeOf(credentials).Name() == "ApiKey" {
 		return &ApiKeyAuthenticator{
-			Credentials: credentials.(*ApiKey),
+			Credentials: credentials.(ApiKey),
 		}, nil
 	} else if reflect.TypeOf(credentials).Name() == "OAuth2" {
 		return &OAuth2Authenticator{
-			Credentials: credentials.(*OAuth2),
+			Credentials: credentials.(OAuth2),
 		}, nil
 	}
 

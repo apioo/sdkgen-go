@@ -3,6 +3,7 @@ package sdkgen
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
@@ -25,14 +26,14 @@ func (parser *Parser) Parse(data string, model *interface{}) error {
 	return nil
 }
 
-func (parser *Parser) Query(parameters map[string]interface{}) interface{} {
-	var result map[string]string
+func (parser *Parser) Query(parameters map[string]interface{}) url.Values {
+	var result = url.Values{}
 	for name, value := range parameters {
 		if value == "" {
 			continue
 		}
 
-		result[name] = ToString(value)
+		result.Add(name, ToString(value))
 	}
 
 	return result
