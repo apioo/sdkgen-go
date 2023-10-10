@@ -22,6 +22,8 @@ func AuthenticatorFactory(credentials CredentialsInterface) (AuthenticatorInterf
 		return &OAuth2Authenticator{
 			Credentials: credentials.(OAuth2),
 		}, nil
+	} else if reflect.TypeOf(credentials).Name() == "Anonymous" {
+		return &AnonymousAuthenticator{}, nil
 	}
 
 	return nil, errors.New("unknown credentials type")

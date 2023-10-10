@@ -3,6 +3,10 @@ package sdkgen
 type CredentialsInterface interface {
 }
 
+type Anonymous struct {
+	CredentialsInterface
+}
+
 type ApiKey struct {
 	CredentialsInterface
 	Token string

@@ -16,6 +16,16 @@ type AuthenticatorInterface interface {
 	RoundTrip(*http.Request) (*http.Response, error)
 }
 
+type AnonymousAuthenticator struct {
+}
+
+func (authenticator *AnonymousAuthenticator) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Add("User-Agent", "SDKgen Client v1.0")
+	req.Header.Add("Accept", "application/json")
+
+	return http.DefaultTransport.RoundTrip(req)
+}
+
 type HttpBasicAuthenticator struct {
 	Credentials HttpBasic
 }
