@@ -13,7 +13,7 @@ import (
 func TestClientGetAll(t *testing.T) {
 	client, _ := Build("my_token")
 
-	response, _ := client.GetAll(8, 16, "foobar")
+	response, _ := client.Product().GetAll(8, 16, "foobar")
 
 	AssertEquals(t, response.Headers["Authorization"], "Bearer my_token")
 	AssertEquals(t, response.Headers["Accept"], "application/json")
@@ -29,7 +29,7 @@ func TestClientCreate(t *testing.T) {
 	client, _ := Build("my_token")
 
 	payload := NewPayload()
-	response, _ := client.Create(payload)
+	response, _ := client.Product().Create(payload)
 
 	AssertEquals(t, response.Headers["Authorization"], "Bearer my_token")
 	AssertEquals(t, response.Headers["Accept"], "application/json")
@@ -42,7 +42,7 @@ func TestClientUpdate(t *testing.T) {
 	client, _ := Build("my_token")
 
 	payload := NewPayload()
-	response, _ := client.Update(1, payload)
+	response, _ := client.Product().Update(1, payload)
 
 	AssertEquals(t, response.Headers["Authorization"], "Bearer my_token")
 	AssertEquals(t, response.Headers["Accept"], "application/json")
@@ -55,7 +55,7 @@ func TestClientPatch(t *testing.T) {
 	client, _ := Build("my_token")
 
 	payload := NewPayload()
-	response, _ := client.Patch(1, payload)
+	response, _ := client.Product().Patch(1, payload)
 
 	AssertEquals(t, response.Headers["Authorization"], "Bearer my_token")
 	AssertEquals(t, response.Headers["Accept"], "application/json")
@@ -67,7 +67,7 @@ func TestClientPatch(t *testing.T) {
 func TestClientDelete(t *testing.T) {
 	client, _ := Build("my_token")
 
-	response, _ := client.Delete(1)
+	response, _ := client.Product().Delete(1)
 
 	AssertEquals(t, response.Headers["Authorization"], "Bearer my_token")
 	AssertEquals(t, response.Headers["Accept"], "application/json")
@@ -136,267 +136,8 @@ type Client struct {
 	internal *ClientAbstract
 }
 
-// GetAll Returns a collection
-func (client *Client) GetAll(startIndex int, count int, search string) (TestResponse, error) {
-	pathParams := make(map[string]interface{})
-
-	queryParams := make(map[string]interface{})
-	queryParams["startIndex"] = startIndex
-	queryParams["count"] = count
-	queryParams["search"] = search
-
-	u, err := url.Parse(client.internal.Parser.Url("/anything", pathParams))
-	if err != nil {
-		return TestResponse{}, errors.New("could not parse url")
-	}
-
-	u.RawQuery = client.internal.Parser.Query(queryParams).Encode()
-
-	req, err := http.NewRequest("GET", u.String(), nil)
-	if err != nil {
-		return TestResponse{}, errors.New("could not create request")
-	}
-
-	resp, err := client.internal.HttpClient.Do(req)
-	if err != nil {
-		return TestResponse{}, errors.New("could not send request")
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		respBody, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return TestResponse{}, errors.New("could not read response body")
-		}
-
-		var response TestResponse
-		err = json.Unmarshal(respBody, &response)
-		if err != nil {
-			return TestResponse{}, errors.New("could not unmarshal JSON response")
-		}
-
-		return response, nil
-	}
-
-	switch resp.StatusCode {
-	default:
-		return TestResponse{}, errors.New("the server returned an unknown status code")
-	}
-}
-
-// Create Creates a new product
-func (client *Client) Create(payload TestRequest) (TestResponse, error) {
-	pathParams := make(map[string]interface{})
-
-	queryParams := make(map[string]interface{})
-
-	u, err := url.Parse(client.internal.Parser.Url("/anything", pathParams))
-	if err != nil {
-		return TestResponse{}, errors.New("could not parse url")
-	}
-
-	u.RawQuery = client.internal.Parser.Query(queryParams).Encode()
-
-	raw, err := json.Marshal(payload)
-	if err != nil {
-		return TestResponse{}, errors.New("could not marshal provided JSON data")
-	}
-
-	var reqBody = bytes.NewReader(raw)
-
-	req, err := http.NewRequest("POST", u.String(), reqBody)
-	if err != nil {
-		return TestResponse{}, errors.New("could not create request")
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := client.internal.HttpClient.Do(req)
-	if err != nil {
-		return TestResponse{}, errors.New("could not send request")
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		respBody, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return TestResponse{}, errors.New("could not read response body")
-		}
-
-		var response TestResponse
-		err = json.Unmarshal(respBody, &response)
-		if err != nil {
-			return TestResponse{}, errors.New("could not unmarshal JSON response")
-		}
-
-		return response, nil
-	}
-
-	switch resp.StatusCode {
-	default:
-		return TestResponse{}, errors.New("the server returned an unknown status code")
-	}
-}
-
-// Update Updates an existing product
-func (client *Client) Update(id int, payload TestRequest) (TestResponse, error) {
-	pathParams := make(map[string]interface{})
-	pathParams["id"] = id
-
-	queryParams := make(map[string]interface{})
-
-	u, err := url.Parse(client.internal.Parser.Url("/anything/:id", pathParams))
-	if err != nil {
-		return TestResponse{}, errors.New("could not parse url")
-	}
-
-	u.RawQuery = client.internal.Parser.Query(queryParams).Encode()
-
-	raw, err := json.Marshal(payload)
-	if err != nil {
-		return TestResponse{}, errors.New("could not marshal provided JSON data")
-	}
-
-	var reqBody = bytes.NewReader(raw)
-
-	req, err := http.NewRequest("PUT", u.String(), reqBody)
-	if err != nil {
-		return TestResponse{}, errors.New("could not create request")
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := client.internal.HttpClient.Do(req)
-	if err != nil {
-		return TestResponse{}, errors.New("could not send request")
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		respBody, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return TestResponse{}, errors.New("could not read response body")
-		}
-
-		var response TestResponse
-		err = json.Unmarshal(respBody, &response)
-		if err != nil {
-			return TestResponse{}, errors.New("could not unmarshal JSON response")
-		}
-
-		return response, nil
-	}
-
-	switch resp.StatusCode {
-	default:
-		return TestResponse{}, errors.New("the server returned an unknown status code")
-	}
-}
-
-// Patch Patches an existing product
-func (client *Client) Patch(id int, payload TestRequest) (TestResponse, error) {
-	pathParams := make(map[string]interface{})
-	pathParams["id"] = id
-
-	queryParams := make(map[string]interface{})
-
-	u, err := url.Parse(client.internal.Parser.Url("/anything/:id", pathParams))
-	if err != nil {
-		return TestResponse{}, errors.New("could not parse url")
-	}
-
-	u.RawQuery = client.internal.Parser.Query(queryParams).Encode()
-
-	raw, err := json.Marshal(payload)
-	if err != nil {
-		return TestResponse{}, errors.New("could not marshal provided JSON data")
-	}
-
-	var reqBody = bytes.NewReader(raw)
-
-	req, err := http.NewRequest("PATCH", u.String(), reqBody)
-	if err != nil {
-		return TestResponse{}, errors.New("could not create request")
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := client.internal.HttpClient.Do(req)
-	if err != nil {
-		return TestResponse{}, errors.New("could not send request")
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		respBody, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return TestResponse{}, errors.New("could not read response body")
-		}
-
-		var response TestResponse
-		err = json.Unmarshal(respBody, &response)
-		if err != nil {
-			return TestResponse{}, errors.New("could not unmarshal JSON response")
-		}
-
-		return response, nil
-	}
-
-	switch resp.StatusCode {
-	default:
-		return TestResponse{}, errors.New("the server returned an unknown status code")
-	}
-}
-
-// Delete Deletes an existing product
-func (client *Client) Delete(id int) (TestResponse, error) {
-	pathParams := make(map[string]interface{})
-	pathParams["id"] = id
-
-	queryParams := make(map[string]interface{})
-
-	u, err := url.Parse(client.internal.Parser.Url("/anything/:id", pathParams))
-	if err != nil {
-		return TestResponse{}, errors.New("could not parse url")
-	}
-
-	u.RawQuery = client.internal.Parser.Query(queryParams).Encode()
-
-	req, err := http.NewRequest("DELETE", u.String(), nil)
-	if err != nil {
-		return TestResponse{}, errors.New("could not create request")
-	}
-
-	resp, err := client.internal.HttpClient.Do(req)
-	if err != nil {
-		return TestResponse{}, errors.New("could not send request")
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		respBody, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return TestResponse{}, errors.New("could not read response body")
-		}
-
-		var response TestResponse
-		err = json.Unmarshal(respBody, &response)
-		if err != nil {
-			return TestResponse{}, errors.New("could not unmarshal JSON response")
-		}
-
-		return response, nil
-	}
-
-	switch resp.StatusCode {
-	default:
-		return TestResponse{}, errors.New("the server returned an unknown status code")
-	}
+func (client *Client) Product() *ProductTag {
+	return NewProductTag(client.internal.HttpClient, client.internal.Parser)
 }
 
 func Build(token string) (*Client, error) {
@@ -410,6 +151,282 @@ func Build(token string) (*Client, error) {
 	return &Client{
 		internal: client,
 	}, nil
+}
+
+type ProductTag struct {
+	internal *TagAbstract
+}
+
+// GetAll Returns a collection
+func (client *ProductTag) GetAll(startIndex int, count int, search string) (TestResponse, error) {
+	pathParams := make(map[string]interface{})
+
+	queryParams := make(map[string]interface{})
+	queryParams["startIndex"] = startIndex
+	queryParams["count"] = count
+	queryParams["search"] = search
+
+	u, err := url.Parse(client.internal.Parser.Url("/anything", pathParams))
+	if err != nil {
+		return TestResponse{}, err
+	}
+
+	u.RawQuery = client.internal.Parser.Query(queryParams).Encode()
+
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return TestResponse{}, err
+	}
+
+	resp, err := client.internal.HttpClient.Do(req)
+	if err != nil {
+		return TestResponse{}, err
+	}
+
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return TestResponse{}, err
+	}
+
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		var response TestResponse
+		err = json.Unmarshal(respBody, &response)
+		if err != nil {
+			return TestResponse{}, err
+		}
+
+		return response, nil
+	}
+
+	switch resp.StatusCode {
+	default:
+		return TestResponse{}, errors.New("the server returned an unknown status code")
+	}
+}
+
+// Create Creates a new product
+func (client *ProductTag) Create(payload TestRequest) (TestResponse, error) {
+	pathParams := make(map[string]interface{})
+
+	queryParams := make(map[string]interface{})
+
+	u, err := url.Parse(client.internal.Parser.Url("/anything", pathParams))
+	if err != nil {
+		return TestResponse{}, err
+	}
+
+	u.RawQuery = client.internal.Parser.Query(queryParams).Encode()
+
+	raw, err := json.Marshal(payload)
+	if err != nil {
+		return TestResponse{}, err
+	}
+
+	var reqBody = bytes.NewReader(raw)
+
+	req, err := http.NewRequest("POST", u.String(), reqBody)
+	if err != nil {
+		return TestResponse{}, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.internal.HttpClient.Do(req)
+	if err != nil {
+		return TestResponse{}, err
+	}
+
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return TestResponse{}, err
+	}
+
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		var response TestResponse
+		err = json.Unmarshal(respBody, &response)
+		if err != nil {
+			return TestResponse{}, err
+		}
+
+		return response, nil
+	}
+
+	switch resp.StatusCode {
+	default:
+		return TestResponse{}, errors.New("the server returned an unknown status code")
+	}
+}
+
+// Update Updates an existing product
+func (client *ProductTag) Update(id int, payload TestRequest) (TestResponse, error) {
+	pathParams := make(map[string]interface{})
+	pathParams["id"] = id
+
+	queryParams := make(map[string]interface{})
+
+	u, err := url.Parse(client.internal.Parser.Url("/anything/:id", pathParams))
+	if err != nil {
+		return TestResponse{}, err
+	}
+
+	u.RawQuery = client.internal.Parser.Query(queryParams).Encode()
+
+	raw, err := json.Marshal(payload)
+	if err != nil {
+		return TestResponse{}, err
+	}
+
+	var reqBody = bytes.NewReader(raw)
+
+	req, err := http.NewRequest("PUT", u.String(), reqBody)
+	if err != nil {
+		return TestResponse{}, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.internal.HttpClient.Do(req)
+	if err != nil {
+		return TestResponse{}, err
+	}
+
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return TestResponse{}, err
+	}
+
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		var response TestResponse
+		err = json.Unmarshal(respBody, &response)
+		if err != nil {
+			return TestResponse{}, err
+		}
+
+		return response, nil
+	}
+
+	switch resp.StatusCode {
+	default:
+		return TestResponse{}, errors.New("the server returned an unknown status code")
+	}
+}
+
+// Patch Patches an existing product
+func (client *ProductTag) Patch(id int, payload TestRequest) (TestResponse, error) {
+	pathParams := make(map[string]interface{})
+	pathParams["id"] = id
+
+	queryParams := make(map[string]interface{})
+
+	u, err := url.Parse(client.internal.Parser.Url("/anything/:id", pathParams))
+	if err != nil {
+		return TestResponse{}, err
+	}
+
+	u.RawQuery = client.internal.Parser.Query(queryParams).Encode()
+
+	raw, err := json.Marshal(payload)
+	if err != nil {
+		return TestResponse{}, err
+	}
+
+	var reqBody = bytes.NewReader(raw)
+
+	req, err := http.NewRequest("PATCH", u.String(), reqBody)
+	if err != nil {
+		return TestResponse{}, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.internal.HttpClient.Do(req)
+	if err != nil {
+		return TestResponse{}, err
+	}
+
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return TestResponse{}, err
+	}
+
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		var response TestResponse
+		err = json.Unmarshal(respBody, &response)
+		if err != nil {
+			return TestResponse{}, err
+		}
+
+		return response, nil
+	}
+
+	switch resp.StatusCode {
+	default:
+		return TestResponse{}, errors.New("the server returned an unknown status code")
+	}
+}
+
+// Delete Deletes an existing product
+func (client *ProductTag) Delete(id int) (TestResponse, error) {
+	pathParams := make(map[string]interface{})
+	pathParams["id"] = id
+
+	queryParams := make(map[string]interface{})
+
+	u, err := url.Parse(client.internal.Parser.Url("/anything/:id", pathParams))
+	if err != nil {
+		return TestResponse{}, err
+	}
+
+	u.RawQuery = client.internal.Parser.Query(queryParams).Encode()
+
+	req, err := http.NewRequest("DELETE", u.String(), nil)
+	if err != nil {
+		return TestResponse{}, err
+	}
+
+	resp, err := client.internal.HttpClient.Do(req)
+	if err != nil {
+		return TestResponse{}, err
+	}
+
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return TestResponse{}, err
+	}
+
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		var response TestResponse
+		err = json.Unmarshal(respBody, &response)
+		if err != nil {
+			return TestResponse{}, err
+		}
+
+		return response, nil
+	}
+
+	switch resp.StatusCode {
+	default:
+		return TestResponse{}, errors.New("the server returned an unknown status code")
+	}
+}
+
+func NewProductTag(httpClient *http.Client, parser *Parser) *ProductTag {
+	return &ProductTag{
+		internal: &TagAbstract{
+			HttpClient: httpClient,
+			Parser:     parser,
+		},
+	}
 }
 
 // test_map_object automatically generated by SDKgen please do not edit this file manually
