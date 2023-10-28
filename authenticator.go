@@ -191,7 +191,7 @@ func (authenticator *OAuth2Authenticator) GetAccessToken(automaticRefresh bool, 
 	timestamp := time.Now().Unix()
 
 	accessToken, err := authenticator.Credentials.TokenStore.Get()
-	if err == nil || accessToken.ExpiresIn < timestamp {
+	if err == nil || accessToken.GetExpiresInTimestamp() < timestamp {
 		accessToken, err = authenticator.FetchAccessTokenByClientCredentials()
 	}
 
@@ -199,7 +199,7 @@ func (authenticator *OAuth2Authenticator) GetAccessToken(automaticRefresh bool, 
 		return "", errors.New("found no access Token, please obtain an access Token before making a request")
 	}
 
-	if accessToken.ExpiresIn > (timestamp + expireThreshold) {
+	if accessToken.GetExpiresInTimestamp() > (timestamp + expireThreshold) {
 		return accessToken.AccessToken, nil
 	}
 
