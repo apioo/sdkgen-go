@@ -27,16 +27,43 @@ func (parser *Parser) Parse(data string, model *interface{}) error {
 }
 
 func (parser *Parser) Query(parameters map[string]interface{}) url.Values {
+	return parser.QueryWithStruct(parameters, []string{})
+}
+
+func (parser *Parser) QueryWithStruct(parameters map[string]interface{}, structNames []string) url.Values {
 	var result = url.Values{}
 	for name, value := range parameters {
 		if value == "" {
 			continue
 		}
 
-		result.Add(name, ToString(value))
+		if parser.Contains(structNames, name) {
+			var properties map[string]interface{}
+			data, _ := json.Marshal(value)
+			json.Unmarshal(data, &properties)
+
+			var values = parser.QueryWithStruct(properties, []string{})
+			for nestedName, nestedValue := range values {
+				for _, v := range nestedValue {
+					result.Add(nestedName, v)
+				}
+			}
+		} else {
+			result.Add(name, ToString(value))
+		}
 	}
 
 	return result
+}
+
+func (parser *Parser) Contains(haystack []string, needle string) bool {
+	for _, value := range haystack {
+		if value == needle {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (parser *Parser) SubstituteParameters(path string, parameters map[string]interface{}) string {
@@ -98,8 +125,15 @@ func ToString(value interface{}) string {
 		} else {
 			return "0"
 		}
-	} else if reflect.TypeOf(value).Name() == "time.Time" {
-		return value.(time.Time).Format(time.RFC3339)
+	} else if reflect.TypeOf(value).Name() == "Time" {
+		var dateTime = value.(time.Time)
+		if dateTime.Year() == 1970 && dateTime.Month() == 1 && dateTime.Day() == 1 {
+			return dateTime.Format(time.TimeOnly)
+		} else if dateTime.Hour() == 0 && dateTime.Minute() == 0 && dateTime.Second() == 0 {
+			return dateTime.Format(time.DateOnly)
+		} else {
+			return dateTime.Format(time.RFC3339)
+		}
 	} else {
 		return ""
 	}
