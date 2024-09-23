@@ -14,4 +14,4 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v3
       - name: Test Go
-        run: go test
+        run: cd tests && go test
