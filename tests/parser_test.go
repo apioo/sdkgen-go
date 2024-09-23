@@ -1,6 +1,8 @@
-package sdkgen
+package tests
 
 import (
+	"github.com/apioo/sdkgen-go"
+	"github.com/apioo/sdkgen-go/tests/generated"
 	"testing"
 	"time"
 )
@@ -12,7 +14,7 @@ type Entry struct {
 }
 
 func TestUrl(t *testing.T) {
-	var parser = NewParser("https://api.acme.com/")
+	var parser = sdkgen.NewParser("https://api.acme.com/")
 
 	var tests []Entry
 	tests = append(tests, Entry{Path: "/foo/bar", Parameters: nil, Expect: "https://api.acme.com/foo/bar"})
@@ -42,9 +44,9 @@ func TestUrl(t *testing.T) {
 }
 
 func TestQuery(t *testing.T) {
-	var parser = NewParser("https://api.acme.com/")
+	var parser = sdkgen.NewParser("https://api.acme.com/")
 
-	var test = TestObject{
+	var test = generated.TestObject{
 		Name: "foo",
 	}
 
