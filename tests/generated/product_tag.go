@@ -474,6 +474,8 @@ func (client *ProductTag) Multipart(payload *sdkgen.Multipart) (TestResponse, er
 		return TestResponse{}, err
 	}
 
+	req.Header.Set("Content-Type", payload.GetContentType())
+
 	resp, err := client.internal.HttpClient.Do(req)
 	if err != nil {
 		return TestResponse{}, err

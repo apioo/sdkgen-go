@@ -7,8 +7,9 @@ import (
 )
 
 type Multipart struct {
-	files  []FilePart
-	fields []FieldPart
+	files       []FilePart
+	fields      []FieldPart
+	contentType string
 }
 
 func (multi *Multipart) AddFile(name string, fileName string, reader io.Reader) {
@@ -19,9 +20,15 @@ func (multi *Multipart) AddField(name string, reader io.Reader) {
 	multi.fields = append(multi.fields, FieldPart{name, reader})
 }
 
+func (multi *Multipart) GetContentType() string {
+	return multi.contentType
+}
+
 func (multi *Multipart) Build() *bytes.Buffer {
 	var reqBody = &bytes.Buffer{}
 	writer := multipart.NewWriter(reqBody)
+
+	multi.contentType = writer.FormDataContentType()
 
 	for _, file := range multi.files {
 		part, _ := writer.CreateFormFile(file.Name, file.FileName)
