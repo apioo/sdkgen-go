@@ -20,7 +20,7 @@ type AnonymousAuthenticator struct {
 }
 
 func (authenticator *AnonymousAuthenticator) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Add("User-Agent", "SDKgen Client v1.0")
+	req.Header.Add("User-Agent", "SDKgen Client v2.0")
 	req.Header.Add("Accept", "application/json")
 
 	return http.DefaultTransport.RoundTrip(req)
@@ -33,7 +33,7 @@ type HttpBasicAuthenticator struct {
 func (authenticator *HttpBasicAuthenticator) RoundTrip(req *http.Request) (*http.Response, error) {
 	var auth = base64.StdEncoding.EncodeToString([]byte(authenticator.Credentials.UserName + ":" + authenticator.Credentials.Password))
 	req.Header.Add("Authorization", "Basic "+auth)
-	req.Header.Add("User-Agent", "SDKgen Client v1.0")
+	req.Header.Add("User-Agent", "SDKgen Client v2.0")
 	req.Header.Add("Accept", "application/json")
 
 	return http.DefaultTransport.RoundTrip(req)
@@ -45,7 +45,7 @@ type HttpBearerAuthenticator struct {
 
 func (authenticator *HttpBearerAuthenticator) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Add("Authorization", "Bearer "+authenticator.Credentials.Token)
-	req.Header.Add("User-Agent", "SDKgen Client v1.0")
+	req.Header.Add("User-Agent", "SDKgen Client v2.0")
 	req.Header.Add("Accept", "application/json")
 
 	return http.DefaultTransport.RoundTrip(req)
@@ -57,7 +57,7 @@ type ApiKeyAuthenticator struct {
 
 func (authenticator *ApiKeyAuthenticator) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Add(authenticator.Credentials.Name, authenticator.Credentials.Token)
-	req.Header.Add("User-Agent", "SDKgen Client v1.0")
+	req.Header.Add("User-Agent", "SDKgen Client v2.0")
 	req.Header.Add("Accept", "application/json")
 
 	return http.DefaultTransport.RoundTrip(req)
@@ -73,7 +73,7 @@ func (authenticator *OAuth2Authenticator) RoundTrip(req *http.Request) (*http.Re
 		req.Header.Add("Authorization", "Bearer "+accessToken)
 	}
 
-	req.Header.Add("User-Agent", "SDKgen Client v1.0")
+	req.Header.Add("User-Agent", "SDKgen Client v2.0")
 	req.Header.Add("Accept", "application/json")
 
 	return http.DefaultTransport.RoundTrip(req)
