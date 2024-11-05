@@ -1,8 +1,8 @@
 package tests
 
 import (
-	"github.com/apioo/sdkgen-go"
-	"github.com/apioo/sdkgen-go/tests/generated"
+	"github.com/apioo/sdkgen-go/v2"
+	"github.com/apioo/sdkgen-go/v2/tests/generated"
 	"testing"
 	"time"
 )

@@ -2,8 +2,8 @@ package tests
 
 import (
 	"encoding/json"
-	"github.com/apioo/sdkgen-go"
-	"github.com/apioo/sdkgen-go/tests/generated"
+	"github.com/apioo/sdkgen-go/v2"
+	"github.com/apioo/sdkgen-go/v2/tests/generated"
 	"net/url"
 	"strings"
 	"testing"
