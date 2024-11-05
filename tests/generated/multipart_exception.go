@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/apioo/sdkgen-go"
+	"github.com/apioo/sdkgen-go/v2"
 )
 
 type MultipartException struct {

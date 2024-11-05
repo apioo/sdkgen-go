@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/apioo/sdkgen-go"
+	"github.com/apioo/sdkgen-go/v2"
 	"io"
 	"net/http"
 	"net/url"
