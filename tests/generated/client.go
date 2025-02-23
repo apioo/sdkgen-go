@@ -26,10 +26,21 @@ func NewClient(baseUrl string, credentials sdkgen.CredentialsInterface) (*Client
 	}, nil
 }
 
+func NewClientWithVersion(baseUrl string, credentials sdkgen.CredentialsInterface, version string) (*Client, error) {
+	var client, err = sdkgen.NewClientWithVersion(baseUrl, credentials, version)
+	if err != nil {
+		return &Client{}, err
+	}
+
+	return &Client{
+		internal: client,
+	}, nil
+}
+
 func Build(token string) (*Client, error) {
 	var credentials = sdkgen.HttpBearer{Token: token}
 
-	return NewClient("http://127.0.0.1:8081", credentials)
+	return NewClientWithVersion("http://127.0.0.1:8081", credentials, "0.1.0")
 }
 
 func BuildAnonymous() (*Client, error) {

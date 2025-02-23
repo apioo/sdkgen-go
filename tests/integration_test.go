@@ -19,7 +19,7 @@ func TestClientGetAll(t *testing.T) {
 
 	AssertEquals(t, headers["Authorization"], "Bearer my_token")
 	AssertEquals(t, headers["Accept"], "application/json")
-	AssertEquals(t, headers["User-Agent"], "SDKgen Client v2.0")
+	AssertEquals(t, headers["User-Agent"], "SDKgen/0.1.0")
 	AssertEquals(t, response.Method, "GET")
 	AssertEquals(t, args["startIndex"], "8")
 	AssertEquals(t, args["count"], "16")
@@ -36,7 +36,7 @@ func TestClientCreate(t *testing.T) {
 
 	AssertEquals(t, headers["Authorization"], "Bearer my_token")
 	AssertEquals(t, headers["Accept"], "application/json")
-	AssertEquals(t, headers["User-Agent"], "SDKgen Client v2.0")
+	AssertEquals(t, headers["User-Agent"], "SDKgen/0.1.0")
 	AssertEquals(t, response.Method, "POST")
 	AssertJson(t, response.Json, "{\"int\":1337,\"float\":13.37,\"string\":\"foobar\",\"bool\":true,\"dateString\":\"2024-09-22\",\"dateTimeString\":\"2024-09-22T10:09:00\",\"timeString\":\"10:09:00\",\"arrayScalar\":[\"foo\",\"bar\"],\"arrayObject\":[{\"id\":1,\"name\":\"foo\"},{\"id\":2,\"name\":\"bar\"}],\"mapScalar\":{\"bar\":\"foo\",\"foo\":\"bar\"},\"mapObject\":{\"bar\":{\"id\":2,\"name\":\"bar\"},\"foo\":{\"id\":1,\"name\":\"foo\"}},\"object\":{\"id\":1,\"name\":\"foo\"}}")
 }
@@ -51,7 +51,7 @@ func TestClientUpdate(t *testing.T) {
 
 	AssertEquals(t, headers["Authorization"], "Bearer my_token")
 	AssertEquals(t, headers["Accept"], "application/json")
-	AssertEquals(t, headers["User-Agent"], "SDKgen Client v2.0")
+	AssertEquals(t, headers["User-Agent"], "SDKgen/0.1.0")
 	AssertEquals(t, response.Method, "PUT")
 	AssertJson(t, response.Json, "{\"int\":1337,\"float\":13.37,\"string\":\"foobar\",\"bool\":true,\"dateString\":\"2024-09-22\",\"dateTimeString\":\"2024-09-22T10:09:00\",\"timeString\":\"10:09:00\",\"arrayScalar\":[\"foo\",\"bar\"],\"arrayObject\":[{\"id\":1,\"name\":\"foo\"},{\"id\":2,\"name\":\"bar\"}],\"mapScalar\":{\"bar\":\"foo\",\"foo\":\"bar\"},\"mapObject\":{\"bar\":{\"id\":2,\"name\":\"bar\"},\"foo\":{\"id\":1,\"name\":\"foo\"}},\"object\":{\"id\":1,\"name\":\"foo\"}}")
 }
@@ -66,7 +66,7 @@ func TestClientPatch(t *testing.T) {
 
 	AssertEquals(t, headers["Authorization"], "Bearer my_token")
 	AssertEquals(t, headers["Accept"], "application/json")
-	AssertEquals(t, headers["User-Agent"], "SDKgen Client v2.0")
+	AssertEquals(t, headers["User-Agent"], "SDKgen/0.1.0")
 	AssertEquals(t, response.Method, "PATCH")
 	AssertJson(t, response.Json, "{\"int\":1337,\"float\":13.37,\"string\":\"foobar\",\"bool\":true,\"dateString\":\"2024-09-22\",\"dateTimeString\":\"2024-09-22T10:09:00\",\"timeString\":\"10:09:00\",\"arrayScalar\":[\"foo\",\"bar\"],\"arrayObject\":[{\"id\":1,\"name\":\"foo\"},{\"id\":2,\"name\":\"bar\"}],\"mapScalar\":{\"bar\":\"foo\",\"foo\":\"bar\"},\"mapObject\":{\"bar\":{\"id\":2,\"name\":\"bar\"},\"foo\":{\"id\":1,\"name\":\"foo\"}},\"object\":{\"id\":1,\"name\":\"foo\"}}")
 }
@@ -80,7 +80,7 @@ func TestClientDelete(t *testing.T) {
 
 	AssertEquals(t, headers["Authorization"], "Bearer my_token")
 	AssertEquals(t, headers["Accept"], "application/json")
-	AssertEquals(t, headers["User-Agent"], "SDKgen Client v2.0")
+	AssertEquals(t, headers["User-Agent"], "SDKgen/0.1.0")
 	AssertEquals(t, response.Method, "DELETE")
 }
 
@@ -95,7 +95,7 @@ func TestClientBinary(t *testing.T) {
 
 	AssertEquals(t, headers["Authorization"], "Bearer my_token")
 	AssertEquals(t, headers["Accept"], "application/json")
-	AssertEquals(t, headers["User-Agent"], "SDKgen Client v2.0")
+	AssertEquals(t, headers["User-Agent"], "SDKgen/0.1.0")
 	AssertEquals(t, response.Method, "POST")
 	AssertEquals(t, response.Data, "foobar")
 }
@@ -113,7 +113,7 @@ func TestClientForm(t *testing.T) {
 
 	AssertEquals(t, headers["Authorization"], "Bearer my_token")
 	AssertEquals(t, headers["Accept"], "application/json")
-	AssertEquals(t, headers["User-Agent"], "SDKgen Client v2.0")
+	AssertEquals(t, headers["User-Agent"], "SDKgen/0.1.0")
 	AssertEquals(t, response.Method, "POST")
 	AssertEquals(t, form["foo"], "bar")
 }
@@ -130,7 +130,7 @@ func TestClientJson(t *testing.T) {
 
 	AssertEquals(t, headers["Authorization"], "Bearer my_token")
 	AssertEquals(t, headers["Accept"], "application/json")
-	AssertEquals(t, headers["User-Agent"], "SDKgen Client v2.0")
+	AssertEquals(t, headers["User-Agent"], "SDKgen/0.1.0")
 	AssertEquals(t, response.Method, "POST")
 	AssertEquals(t, json.String, "bar")
 }
@@ -148,7 +148,7 @@ func TestClientMultipart(t *testing.T) {
 
 	AssertEquals(t, headers["Authorization"], "Bearer my_token")
 	AssertEquals(t, headers["Accept"], "application/json")
-	AssertEquals(t, headers["User-Agent"], "SDKgen Client v2.0")
+	AssertEquals(t, headers["User-Agent"], "SDKgen/0.1.0")
 	AssertEquals(t, response.Method, "POST")
 	AssertEquals(t, files["foo"], "foobar")
 }
@@ -162,7 +162,7 @@ func TestClientText(t *testing.T) {
 
 	AssertEquals(t, headers["Authorization"], "Bearer my_token")
 	AssertEquals(t, headers["Accept"], "application/json")
-	AssertEquals(t, headers["User-Agent"], "SDKgen Client v2.0")
+	AssertEquals(t, headers["User-Agent"], "SDKgen/0.1.0")
 	AssertEquals(t, response.Method, "POST")
 	AssertEquals(t, response.Data, "foobar")
 }
@@ -176,7 +176,7 @@ func TestClientXml(t *testing.T) {
 
 	AssertEquals(t, headers["Authorization"], "Bearer my_token")
 	AssertEquals(t, headers["Accept"], "application/json")
-	AssertEquals(t, headers["User-Agent"], "SDKgen Client v2.0")
+	AssertEquals(t, headers["User-Agent"], "SDKgen/0.1.0")
 	AssertEquals(t, response.Method, "POST")
 	AssertEquals(t, response.Data, "<foo>bar</foo>")
 }

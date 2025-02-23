@@ -12,71 +12,58 @@ import (
 )
 
 type AuthenticatorInterface interface {
-	http.RoundTripper
-	RoundTrip(*http.Request) (*http.Response, error)
+	Intercept(*http.Request) (*http.Request, error)
 }
 
 type AnonymousAuthenticator struct {
 }
 
-func (authenticator *AnonymousAuthenticator) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Add("User-Agent", "SDKgen Client v2.0")
-	req.Header.Add("Accept", "application/json")
-
-	return http.DefaultTransport.RoundTrip(req)
+func (authenticator *AnonymousAuthenticator) Intercept(req *http.Request) (*http.Request, error) {
+	return req, nil
 }
 
 type HttpBasicAuthenticator struct {
 	Credentials HttpBasic
 }
 
-func (authenticator *HttpBasicAuthenticator) RoundTrip(req *http.Request) (*http.Response, error) {
+func (authenticator *HttpBasicAuthenticator) Intercept(req *http.Request) (*http.Request, error) {
 	var auth = base64.StdEncoding.EncodeToString([]byte(authenticator.Credentials.UserName + ":" + authenticator.Credentials.Password))
 	req.Header.Add("Authorization", "Basic "+auth)
-	req.Header.Add("User-Agent", "SDKgen Client v2.0")
-	req.Header.Add("Accept", "application/json")
 
-	return http.DefaultTransport.RoundTrip(req)
+	return req, nil
 }
 
 type HttpBearerAuthenticator struct {
 	Credentials HttpBearer
 }
 
-func (authenticator *HttpBearerAuthenticator) RoundTrip(req *http.Request) (*http.Response, error) {
+func (authenticator *HttpBearerAuthenticator) Intercept(req *http.Request) (*http.Request, error) {
 	req.Header.Add("Authorization", "Bearer "+authenticator.Credentials.Token)
-	req.Header.Add("User-Agent", "SDKgen Client v2.0")
-	req.Header.Add("Accept", "application/json")
 
-	return http.DefaultTransport.RoundTrip(req)
+	return req, nil
 }
 
 type ApiKeyAuthenticator struct {
 	Credentials ApiKey
 }
 
-func (authenticator *ApiKeyAuthenticator) RoundTrip(req *http.Request) (*http.Response, error) {
+func (authenticator *ApiKeyAuthenticator) Intercept(req *http.Request) (*http.Request, error) {
 	req.Header.Add(authenticator.Credentials.Name, authenticator.Credentials.Token)
-	req.Header.Add("User-Agent", "SDKgen Client v2.0")
-	req.Header.Add("Accept", "application/json")
 
-	return http.DefaultTransport.RoundTrip(req)
+	return req, nil
 }
 
 type OAuth2Authenticator struct {
 	Credentials OAuth2
 }
 
-func (authenticator *OAuth2Authenticator) RoundTrip(req *http.Request) (*http.Response, error) {
+func (authenticator *OAuth2Authenticator) Intercept(req *http.Request) (*http.Request, error) {
 	accessToken, err := authenticator.GetAccessToken(true, 60*10)
 	if err == nil {
 		req.Header.Add("Authorization", "Bearer "+accessToken)
 	}
 
-	req.Header.Add("User-Agent", "SDKgen Client v2.0")
-	req.Header.Add("Accept", "application/json")
-
-	return http.DefaultTransport.RoundTrip(req)
+	return req, nil
 }
 
 func (authenticator *OAuth2Authenticator) BuildRedirectUrl(redirectUrl string, scopes []string, state string) (string, error) {

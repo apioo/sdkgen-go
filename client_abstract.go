@@ -24,3 +24,18 @@ func NewClient(baseUrl string, credentials CredentialsInterface) (*ClientAbstrac
 		},
 	}, nil
 }
+
+func NewClientWithVersion(baseUrl string, credentials CredentialsInterface, version string) (*ClientAbstract, error) {
+	authenticator, err := AuthenticatorFactory(credentials)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ClientAbstract{
+		Authenticator: authenticator,
+		HttpClient:    HttpClientFactoryWithVersion(authenticator, version),
+		Parser: &Parser{
+			BaseUrl: baseUrl,
+		},
+	}, nil
+}
